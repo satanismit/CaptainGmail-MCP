@@ -39,7 +39,7 @@ def get_model_name() -> str:
 
 
 def chat_completion_with_retry(client: Groq, **kwargs: Any) -> Any:
-    """Execute Groq chat completion with exponential backoff on rate limits."""
+    """Execute Groq chat completion with exponential backoff on rate limits and tool call formatting retries."""
 
     max_retries = 5
     base_delay = 2.0
@@ -56,11 +56,19 @@ def chat_completion_with_retry(client: Groq, **kwargs: Any) -> Any:
                 or "too many requests" in err_msg
                 or "rate_limit" in type(error).__name__.lower()
             )
+            is_tool_use_failed = (
+                "tool_use_failed" in err_msg
+                or "failed to call a function" in err_msg
+            )
             if is_rate_limit:
                 if attempt == max_retries - 1:
                     raise error
                 delay = base_delay * (2**attempt)
                 time.sleep(delay)
+            elif is_tool_use_failed and attempt < max_retries - 1:
+                # Retry with slight temperature tweak if model emitted malformed tool syntax
+                kwargs["temperature"] = 0.1 if attempt % 2 == 0 else 0
+                time.sleep(0.5)
             else:
                 raise error
 
@@ -100,18 +108,34 @@ def generate_text(prompt: str) -> str:
 def convert_mcp_tools_to_groq(
     mcp_tools: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Convert MCP tool definitions into Groq function tools."""
+    """Convert MCP tool definitions into Groq function tools with cleaned schemas."""
 
     groq_tools: list[dict[str, Any]] = []
 
     for tool in mcp_tools:
+        description = tool.get("description", "").strip()
+        schema = dict(tool.get("input_schema", {}))
+        
+        # Clean title fields from Pydantic / FastMCP schemas that can confuse LLM parsing
+        schema.pop("title", None)
+        if "properties" in schema and isinstance(schema["properties"], dict):
+            clean_properties = {}
+            for prop_name, prop_val in schema["properties"].items():
+                if isinstance(prop_val, dict):
+                    prop_copy = dict(prop_val)
+                    prop_copy.pop("title", None)
+                    clean_properties[prop_name] = prop_copy
+                else:
+                    clean_properties[prop_name] = prop_val
+            schema["properties"] = clean_properties
+
         groq_tools.append(
             {
                 "type": "function",
                 "function": {
                     "name": tool["name"],
-                    "description": tool["description"],
-                    "parameters": tool["input_schema"],
+                    "description": description,
+                    "parameters": schema,
                 },
             }
         )
@@ -425,7 +449,7 @@ async def run_iterative_gmail_agent(
                 "Follow these instructions:\n"
                 "1. Use Gmail tools whenever private Gmail data is needed.\n"
                 "2. For requests about conversations or threads (e.g. 'conversation with X', 'thread about Y'), use the thread tools: search_gmail_threads and get_gmail_thread.\n"
-                "3. For requests about individual emails or messages, use the message tools: search_gmail and get_gmail_email.\n"
+                "3. For requests about individual emails or messages, use the message tools: search_gmail_messages (or search_gmail) and get_gmail_message (or get_gmail_email).\n"
                 "4. Use the recent conversation history to understand references such as 'it', 'that email', 'the thread', or 'the previous one'. Use any message IDs or thread IDs present in the history directly instead of searching for them again.\n"
                 "5. Never invent email details or message IDs.\n"
                 "6. After receiving tool results, answer clearly and only using information supported by those results.\n"

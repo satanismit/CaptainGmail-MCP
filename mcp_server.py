@@ -59,6 +59,36 @@ def search_gmail(
 
 
 @mcp.tool()
+def search_gmail_messages(
+    query: str,
+    max_results: int = 5,
+) -> list[dict[str, Any]]:
+    """
+    Search the authenticated user's Gmail messages.
+
+    Use Gmail search syntax such as:
+    - is:unread
+    - from:github.com
+    - subject:interview
+    - newer_than:7d
+
+    Args:
+        query: Gmail search query.
+        max_results: Maximum number of matching emails to return.
+
+    Returns:
+        Matching email metadata containing message ID, sender,
+        subject and date.
+    """
+
+    return search_emails(
+        query=query,
+        max_results=max_results,
+        access_token=get_request_access_token(),
+    )
+
+
+@mcp.tool()
 def get_gmail_email(
     message_id: str,
 ) -> dict[str, Any]:
@@ -69,6 +99,27 @@ def get_gmail_email(
 
     Args:
         message_id: Gmail message ID returned by search_gmail.
+
+    Returns:
+        Email details containing the message ID, thread ID, sender,
+        recipient, subject, date and plain-text body.
+    """
+
+    return get_email(
+        message_id=message_id,
+        access_token=get_request_access_token(),
+    )
+
+
+@mcp.tool()
+def get_gmail_message(
+    message_id: str,
+) -> dict[str, Any]:
+    """
+    Retrieve one Gmail message using its message ID.
+
+    Args:
+        message_id: Gmail message ID.
 
     Returns:
         Email details containing the message ID, thread ID, sender,

@@ -33,6 +33,14 @@ MANIFEST
 .env.*
 credentials.json
 token.json
+client_secret*.json
+oauth*.json
+secrets*.json
+*.pem
+*.key
+*.p12
+*.pfx
+.envrc
 
 # Virtual environments
 .venv/
@@ -58,6 +66,13 @@ myenv/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Node / React frontend
+frontend/node_modules/
+frontend/dist/
+
+# Error logs
+error.log
 
 # Testing / coverage
 .pytest_cache/

@@ -43,6 +43,11 @@ def chat_completion_with_retry(client: Groq, **kwargs: Any) -> Any:
 
     max_retries = 5
     base_delay = 2.0
+    repair_instruction = (
+        "Tool-calling format rule: when tools are provided, use only native tool calls. "
+        "Never output pseudo-call tags like <function=...>, XML, or JSON wrapped in text. "
+        "Return normal assistant text only when no tool call is needed."
+    )
 
     for attempt in range(max_retries):
         try:
@@ -66,8 +71,17 @@ def chat_completion_with_retry(client: Groq, **kwargs: Any) -> Any:
                 delay = base_delay * (2**attempt)
                 time.sleep(delay)
             elif is_tool_use_failed and attempt < max_retries - 1:
-                # Retry with slight temperature tweak if model emitted malformed tool syntax
-                kwargs["temperature"] = 0.1 if attempt % 2 == 0 else 0
+                # Retry with explicit repair guidance when the model emits malformed tool syntax.
+                messages = kwargs.get("messages")
+                if isinstance(messages, list):
+                    kwargs["messages"] = [
+                        *messages,
+                        {
+                            "role": "system",
+                            "content": repair_instruction,
+                        },
+                    ]
+                kwargs["temperature"] = 0
                 time.sleep(0.5)
             else:
                 raise error
@@ -168,7 +182,9 @@ async def select_gmail_tool(
                     "You are an email assistant. "
                     "Use the available Gmail tools when the user asks "
                     "to search, find, list, or read Gmail messages. "
-                    "Do not invent message IDs."
+                    "Do not invent message IDs. "
+                    "If tools are provided, use native tool calls only. "
+                    "Never output pseudo-call text like <function=...>."
                 ),
             },
             {
@@ -266,7 +282,9 @@ async def run_gmail_agent(
                 "Never invent email details or message IDs. "
                 "After receiving a tool result, summarize it clearly. "
                 "Do not claim an action succeeded unless the tool "
-                "result confirms it."
+                "result confirms it. "
+                "If tools are provided, use native tool calls only and "
+                "never output pseudo-call text like <function=...>."
             ),
         },
         {
@@ -453,7 +471,8 @@ async def run_iterative_gmail_agent(
                 "4. Use the recent conversation history to understand references such as 'it', 'that email', 'the thread', or 'the previous one'. Use any message IDs or thread IDs present in the history directly instead of searching for them again.\n"
                 "5. Never invent email details or message IDs.\n"
                 "6. After receiving tool results, answer clearly and only using information supported by those results.\n"
-                "7. When replying to an email, sender, or conversation, you MUST first search for the email or thread to find the correct recipient email address and subject. Never guess or invent recipient addresses or subjects."
+                "7. When replying to an email, sender, or conversation, you MUST first search for the email or thread to find the correct recipient email address and subject. Never guess or invent recipient addresses or subjects.\n"
+                "8. If tools are provided, you MUST use native tool calls only. Never output pseudo-call text such as <function=...>."
             ),
         },
         *history,

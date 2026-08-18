@@ -15,11 +15,11 @@ load_dotenv()
 def get_groq_client() -> Groq:
     """Create a Groq client using the configured API key."""
 
-    api_key = os.getenv("GROQ_API_KEY", "").strip()
+    api_key = os.getenv("API_KEY", "").strip() or os.getenv("GROQ_API_KEY", "").strip()
 
     if not api_key:
         raise RuntimeError(
-            "GROQ_API_KEY is not configured."
+            "API_KEY is not configured."
         )
 
     return Groq(api_key=api_key)
@@ -28,11 +28,11 @@ def get_groq_client() -> Groq:
 def get_model_name() -> str:
     """Return the configured Groq model name."""
 
-    model_name = os.getenv("GROQ_MODEL", "").strip()
+    model_name = os.getenv("MODEL", "").strip() or os.getenv("GROQ_MODEL", "").strip()
 
     if not model_name:
         raise RuntimeError(
-            "GROQ_MODEL is not configured."
+            "MODEL is not configured."
         )
 
     return model_name

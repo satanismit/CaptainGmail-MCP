@@ -79,8 +79,8 @@ def has_groq_configuration() -> bool:
     """Return True when the app has the Groq settings it needs."""
 
     return bool(
-        os.getenv("GROQ_API_KEY", "").strip()
-        and os.getenv("GROQ_MODEL", "").strip()
+        (os.getenv("API_KEY", "").strip() or os.getenv("GROQ_API_KEY", "").strip())
+        and (os.getenv("MODEL", "").strip() or os.getenv("GROQ_MODEL", "").strip())
     )
 
 
@@ -130,7 +130,7 @@ def get_status() -> dict[str, bool]:
 
     return {
         "gmail_connected": is_gmail_connected(),
-        "groq_configured": has_groq_configuration(),
+        "ai_configured": has_groq_configuration(),
     }
 
 
@@ -193,7 +193,7 @@ async def chat(request: ChatRequest) -> dict[str, Any]:
     if not has_groq_configuration():
         raise HTTPException(
             status_code=503,
-            detail="GROQ_API_KEY and GROQ_MODEL must be configured.",
+            detail="API_KEY and MODEL must be configured.",
         )
 
     try:

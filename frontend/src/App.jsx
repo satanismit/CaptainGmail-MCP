@@ -10,7 +10,7 @@ import './App.css';
 
 function App() {
   const [gmailConnected, setGmailConnected] = useState(false);
-  const [groqConfigured, setGroqConfigured] = useState(false);
+  const [aiConfigured, setAiConfigured] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [statusLoading, setStatusLoading] = useState(true);
   const [toast, setToast] = useState(null);
@@ -34,7 +34,7 @@ function App() {
     try {
       const data = await getStatus();
       setGmailConnected(data.gmail_connected);
-      setGroqConfigured(data.groq_configured);
+      setAiConfigured(data.ai_configured);
     } catch {
       // Backend may not be running yet
     } finally {
@@ -95,9 +95,9 @@ function App() {
             Connect your Gmail account to search, summarize, and draft emails
             with AI.
           </p>
-          {!groqConfigured && (
+          {!aiConfigured && (
             <div className="connect-screen__warning">
-              ⚠️ Set GROQ_API_KEY and GROQ_MODEL in your .env file to enable
+              ⚠️ Set API_KEY and MODEL in your .env file to enable
               chat.
             </div>
           )}
@@ -124,11 +124,11 @@ function App() {
       <div className="main-content">
         <Header
           gmailConnected={gmailConnected}
-          groqConfigured={groqConfigured}
+          groqConfigured={aiConfigured}
           onClearChat={clearChat}
           onDisconnect={handleDisconnect}
         />
-        {!groqConfigured && (
+        {!aiConfigured && (
           <div
             style={{
               padding: '12px 24px',
@@ -141,7 +141,7 @@ function App() {
               gap: '8px',
             }}
           >
-            ⚠️ Set GROQ_API_KEY and GROQ_MODEL in your .env file to enable
+            ⚠️ Set API_KEY and MODEL in your .env file to enable
             chat.
           </div>
         )}
@@ -156,7 +156,7 @@ function App() {
         )}
         <ChatInput
           onSend={sendMessage}
-          disabled={isLoading || !groqConfigured}
+          disabled={isLoading || !aiConfigured}
         />
       </div>
       {toast && (

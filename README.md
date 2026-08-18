@@ -148,8 +148,8 @@ cd ..
 Create a `.env` file in the project root:
 
 ```env
-GROQ_API_KEY=your_groq_api_key_here
-GROQ_MODEL=llama-3.1-8b-instant
+API_KEY=your_api_key_here
+MODEL=llama-3.1-8b-instant
 ```
 
 ### 5. Set Up Google OAuth Credentials
@@ -188,8 +188,8 @@ Open **http://localhost:5173** in your browser. Click **Connect Gmail** to authe
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GROQ_API_KEY` | **Yes** | Your Groq API key |
-| `GROQ_MODEL` | **Yes** | Groq model name (e.g., `llama-3.1-8b-instant`) |
+| `API_KEY` | **Yes** | API key for your configured LLM provider |
+| `MODEL` | **Yes** | Model name (e.g., `llama-3.1-8b-instant`) |
 | `GOOGLE_CLIENT_SECRETS_JSON` | One of these **or** a `credentials.json` file | Google OAuth client config as a JSON string |
 | `GOOGLE_OAUTH_CLIENT_SECRETS_JSON` | (alternative) | Same as above |
 | `GMAIL_CLIENT_SECRETS_JSON` | (alternative) | Same as above |

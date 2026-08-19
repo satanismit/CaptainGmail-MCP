@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Mail, AlertTriangle, Link } from 'lucide-react';
 import { getStatus, connectGmail, disconnectGmail } from './services/api';
 import { useChat } from './hooks/useChat';
 import Header from './components/Header';
@@ -14,6 +15,7 @@ function App() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [statusLoading, setStatusLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const {
     messages,
@@ -23,6 +25,10 @@ function App() {
     clearChat,
     dismissPendingAction,
     confirmDraftCreated,
+    deleteMessage,
+    editMessage,
+    regenerateResponse,
+    stopGeneration
   } = useChat();
 
   const showToast = useCallback((message, type = 'success') => {
@@ -74,11 +80,16 @@ function App() {
     sendMessage(templateText);
   };
 
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const closeSidebar = () => setSidebarOpen(false);
+
   if (statusLoading) {
     return (
       <div className="app-layout app-layout--disconnected">
         <div className="connect-screen">
-          <div className="connect-screen__icon">📧</div>
+          <div className="connect-screen__icon">
+            <Mail />
+          </div>
           <div className="connect-screen__title">Loading...</div>
         </div>
       </div>
@@ -89,7 +100,9 @@ function App() {
     return (
       <div className="app-layout app-layout--disconnected">
         <div className="connect-screen">
-          <div className="connect-screen__icon">📧</div>
+          <div className="connect-screen__icon">
+            <Mail />
+          </div>
           <h1 className="connect-screen__title">CAPTAINGMAIL-MCP</h1>
           <p className="connect-screen__subtitle">
             Connect your Gmail account to search, summarize, and draft emails
@@ -97,8 +110,8 @@ function App() {
           </p>
           {!aiConfigured && (
             <div className="connect-screen__warning">
-              ⚠️ Set API_KEY and MODEL in your .env file to enable
-              chat.
+              <AlertTriangle />
+              Set API_KEY and MODEL in your .env file to enable chat.
             </div>
           )}
           <button
@@ -106,7 +119,8 @@ function App() {
             onClick={handleConnect}
             disabled={isConnecting}
           >
-            {isConnecting ? 'Connecting...' : '🔗 Connect Gmail'}
+            <Link />
+            {isConnecting ? 'Connecting...' : 'Connect Gmail'}
           </button>
         </div>
         {toast && (
@@ -120,32 +134,37 @@ function App() {
 
   return (
     <div className="app-layout">
-      <Sidebar onUseTemplate={handleTemplateUse} />
+      {/* Mobile overlay */}
+      <div
+        className={`sidebar-overlay${sidebarOpen ? ' sidebar-overlay--visible' : ''}`}
+        onClick={closeSidebar}
+      />
+      <Sidebar
+        onUseTemplate={handleTemplateUse}
+        isOpen={sidebarOpen}
+        onClose={closeSidebar}
+      />
       <div className="main-content">
         <Header
           gmailConnected={gmailConnected}
           groqConfigured={aiConfigured}
           onClearChat={clearChat}
           onDisconnect={handleDisconnect}
+          onToggleSidebar={toggleSidebar}
         />
         {!aiConfigured && (
-          <div
-            style={{
-              padding: '12px 24px',
-              background: 'var(--warning-light)',
-              borderBottom: '1px solid rgba(245, 158, 11, 0.2)',
-              color: 'var(--warning)',
-              fontSize: '13px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            ⚠️ Set API_KEY and MODEL in your .env file to enable
-            chat.
+          <div className="warning-banner">
+            <AlertTriangle />
+            Set API_KEY and MODEL in your .env file to enable chat.
           </div>
         )}
-        <ChatArea messages={messages} isLoading={isLoading} />
+        <ChatArea 
+          messages={messages} 
+          isLoading={isLoading} 
+          onDelete={deleteMessage}
+          onEdit={editMessage}
+          onRegenerate={regenerateResponse}
+        />
         {pendingAction && (
           <DraftPreview
             pendingAction={pendingAction}
@@ -156,7 +175,9 @@ function App() {
         )}
         <ChatInput
           onSend={sendMessage}
-          disabled={isLoading || !aiConfigured}
+          disabled={!aiConfigured}
+          isLoading={isLoading}
+          onStop={stopGeneration}
         />
       </div>
       {toast && (

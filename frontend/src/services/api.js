@@ -40,7 +40,7 @@ export async function getTemplates() {
   return handleResponse(response);
 }
 
-export async function sendChatMessage(message, conversationHistory) {
+export async function sendChatMessage(message, conversationHistory, signal) {
   const response = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -48,6 +48,7 @@ export async function sendChatMessage(message, conversationHistory) {
       message,
       conversation_history: conversationHistory,
     }),
+    signal, // Pass the AbortSignal to fetch
   });
   return handleResponse(response);
 }

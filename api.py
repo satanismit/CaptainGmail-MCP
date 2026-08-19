@@ -1,4 +1,5 @@
 import os
+# Trigger reload
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,10 +15,8 @@ from auth import authenticate_gmail
 from mcp_client import call_mcp_tool
 
 
-load_dotenv()
-
-
 PROJECT_DIR = Path(__file__).resolve().parent
+load_dotenv(PROJECT_DIR / ".env")
 TOKEN_FILE = PROJECT_DIR / "token.json"
 
 

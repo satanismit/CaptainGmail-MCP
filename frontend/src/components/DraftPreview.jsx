@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FileEdit, Check } from 'lucide-react';
 import { createDraft } from '../services/api';
 
 function DraftPreview({ pendingAction, onConfirm, onCancel, showToast }) {
@@ -24,9 +25,11 @@ function DraftPreview({ pendingAction, onConfirm, onCancel, showToast }) {
   };
 
   return (
-    <div style={{ padding: '0 24px 8px' }}>
+    <div className="draft-preview-wrapper">
       <div className="draft-preview">
-        <div className="draft-preview__title">📝 Draft Preview</div>
+        <div className="draft-preview__title">
+          <FileEdit /> Draft Preview
+        </div>
         <div className="draft-preview__field">
           <div className="draft-preview__label">To</div>
           <div className="draft-preview__value">{to}</div>
@@ -41,11 +44,12 @@ function DraftPreview({ pendingAction, onConfirm, onCancel, showToast }) {
         </div>
         <div className="draft-preview__actions">
           <button
-            className="btn btn--primary"
+            className="btn btn--success"
             onClick={handleCreate}
             disabled={isCreating}
           >
-            {isCreating ? 'Creating...' : '✅ Create Draft'}
+            <Check />
+            {isCreating ? 'Creating...' : 'Create Draft'}
           </button>
           <button
             className="btn btn--danger"

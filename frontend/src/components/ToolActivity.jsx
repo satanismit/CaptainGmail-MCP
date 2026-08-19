@@ -1,4 +1,12 @@
 import { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
+
+function getToolDotColor(toolName) {
+  if (toolName.includes('search')) return 'var(--google-blue)';
+  if (toolName.includes('draft')) return 'var(--google-yellow)';
+  if (toolName.includes('get') || toolName.includes('read')) return 'var(--google-green)';
+  return 'var(--text-secondary)';
+}
 
 function ToolActivity({ toolHistory }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +24,7 @@ function ToolActivity({ toolHistory }) {
             isOpen ? ' tool-activity__arrow--open' : ''
           }`}
         >
-          ▶
+          <ChevronRight />
         </span>
         Tool activity ({toolHistory.length} call{toolHistory.length !== 1 ? 's' : ''})
       </button>
@@ -28,6 +36,10 @@ function ToolActivity({ toolHistory }) {
         {toolHistory.map((call, index) => (
           <div className="tool-activity__call" key={index}>
             <div className="tool-activity__call-name">
+              <div 
+                className="tool-activity__dot" 
+                style={{ backgroundColor: getToolDotColor(call.tool_name) }}
+              />
               {index + 1}. {call.tool_name}
             </div>
             <pre className="tool-activity__call-args">

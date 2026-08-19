@@ -1,7 +1,29 @@
 import { useState } from 'react';
+import { ChevronRight, Mail, Reply, Clock, FileText, Calendar, MessageSquare, Code } from 'lucide-react';
 import TEMPLATES from '../data/templates';
 
-function Sidebar({ onUseTemplate }) {
+function getIconForTemplate(name) {
+  switch (name) {
+    case 'Professional new message':
+      return <Mail size={16} color="var(--google-blue)" />;
+    case 'Reply to message (by ID)':
+      return <Reply size={16} color="var(--google-green)" />;
+    case 'Follow-up':
+      return <Clock size={16} color="var(--google-yellow)" />;
+    case 'Summarize thread into reply':
+      return <FileText size={16} color="var(--google-blue)" />;
+    case 'Meeting / schedule request':
+      return <Calendar size={16} color="var(--google-green)" />;
+    case 'Casual short':
+      return <MessageSquare size={16} color="var(--google-blue)" />;
+    case 'Return JSON draft (tool)':
+      return <Code size={16} color="var(--google-red)" />;
+    default:
+      return <Mail size={16} color="var(--text-secondary)" />;
+  }
+}
+
+function Sidebar({ onUseTemplate, isOpen, onClose }) {
   const [expandedTemplate, setExpandedTemplate] = useState(null);
   const [selectedText, setSelectedText] = useState('');
 
@@ -18,6 +40,7 @@ function Sidebar({ onUseTemplate }) {
   const handleUse = () => {
     if (selectedText.trim()) {
       onUseTemplate(selectedText);
+      if (onClose) onClose();
     }
   };
 
@@ -28,33 +51,36 @@ function Sidebar({ onUseTemplate }) {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? ' sidebar--open' : ''}`}>
       <div className="sidebar__header">
         <h2 className="sidebar__title">Prompt Templates</h2>
       </div>
       <div className="sidebar__templates">
         {templateEntries.map(([name, text]) => {
-          const isOpen = expandedTemplate === name;
+          const isExpanded = expandedTemplate === name;
           return (
             <div className="template-item" key={name}>
               <button
                 className={`template-item__header${
-                  isOpen ? ' template-item__header--active' : ''
+                  isExpanded ? ' template-item__header--active' : ''
                 }`}
                 onClick={() => handleToggle(name)}
               >
-                <span
-                  className={`template-item__arrow${
-                    isOpen ? ' template-item__arrow--open' : ''
-                  }`}
-                >
-                  ▶
+                <span className="template-item__icon">
+                  {getIconForTemplate(name)}
                 </span>
                 {name}
+                <span
+                  className={`template-item__arrow${
+                    isExpanded ? ' template-item__arrow--open' : ''
+                  }`}
+                >
+                  <ChevronRight />
+                </span>
               </button>
               <div
                 className={`template-item__content${
-                  isOpen ? ' template-item__content--open' : ''
+                  isExpanded ? ' template-item__content--open' : ''
                 }`}
               >
                 <p className="template-item__text">{text}</p>
@@ -74,7 +100,7 @@ function Sidebar({ onUseTemplate }) {
       {selectedText && (
         <div className="sidebar__selected">
           <div className="sidebar__selected-label">
-            Selected template (edit &amp; copy into chat)
+            Selected template
           </div>
           <textarea
             className="sidebar__selected-textarea"

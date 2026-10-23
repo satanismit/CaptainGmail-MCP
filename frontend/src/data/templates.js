@@ -16,6 +16,10 @@ const TEMPLATES = {
     'Summarize the recent thread about "[topic]" and draft a response that: 1) acknowledges received info, ' +
     '2) lists two action items, 3) asks one clarifying question. Make it concise and professional.',
 
+  'Summarize Email Thread':
+    'Summarize my latest email conversation with [sender or topic]. ' +
+    'Show the main points, important dates, decisions, pending questions, and next steps.',
+
   'Meeting / schedule request':
     'Draft an email to [recipient] proposing a meeting on [two date/time options] for [purpose]. Include duration ' +
     '(30 mins), a proposed agenda, and ask them to confirm or propose alternatives.',
@@ -26,6 +30,11 @@ const TEMPLATES = {
   'Return JSON draft (tool)':
     'Prepare a Gmail draft only. Return a JSON object with keys `to`, `subject`, and `body`. `to`: [email], ' +
     '`subject`: short descriptive subject, `body`: full email text (include signature "[Your Name]"). Do not send.',
+
+  'Action Items & Follow-ups':
+    'Analyze my recent email conversations and identify pending tasks, deadlines, ' +
+    'unanswered questions, and conversations that may need follow-up. ' +
+    'Provide evidence from the emails and offer to prepare follow-up drafts for review.',
 };
 
 export default TEMPLATES;

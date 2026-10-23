@@ -1,6 +1,6 @@
-import { Mail, Eraser, Trash2 } from 'lucide-react';
+import { Mail, Eraser, Trash2, LayoutDashboard, MessageSquare } from 'lucide-react';
 
-function Header({ gmailConnected, groqConfigured, onClearChat, onDisconnect, onToggleSidebar }) {
+function Header({ gmailConnected, groqConfigured, onClearChat, onDisconnect, onToggleSidebar, activeView, onViewChange }) {
   return (
     <header className="header">
       <div className="header__left">
@@ -15,6 +15,22 @@ function Header({ gmailConnected, groqConfigured, onClearChat, onDisconnect, onT
           <Mail />
         </div>
         <h1 className="header__title">CAPTAINGMAIL-MCP</h1>
+        <div className="header__nav">
+          <button
+            className={`header__nav-btn${activeView === 'chat' ? ' header__nav-btn--active' : ''}`}
+            onClick={() => onViewChange('chat')}
+          >
+            <MessageSquare size={16} />
+            Chat
+          </button>
+          <button
+            className={`header__nav-btn${activeView === 'dashboard' ? ' header__nav-btn--active' : ''}`}
+            onClick={() => onViewChange('dashboard')}
+          >
+            <LayoutDashboard size={16} />
+            Dashboard
+          </button>
+        </div>
       </div>
       <div className="header__right">
         {gmailConnected && (

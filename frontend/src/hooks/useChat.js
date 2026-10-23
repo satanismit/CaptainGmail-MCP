@@ -13,7 +13,7 @@ export function useChat() {
   
   const abortControllerRef = useRef(null);
 
-  const performSend = async (messageText, historyUpToNow) => {
+  const performSend = async (messageText, historyUpToNow, tone) => {
     setError(null);
     setIsLoading(true);
 
@@ -25,7 +25,7 @@ export function useChat() {
     abortControllerRef.current = new AbortController();
 
     try {
-      const result = await sendChatMessage(messageText, historyUpToNow, abortControllerRef.current.signal);
+      const result = await sendChatMessage(messageText, historyUpToNow, abortControllerRef.current.signal, tone);
 
       if (result.pending_action) {
         setPendingAction(result.pending_action);
@@ -79,7 +79,7 @@ export function useChat() {
   };
 
   const sendMessage = useCallback(
-    (messageText) => {
+    (messageText, tone = 'professional') => {
       const trimmed = messageText.trim();
       if (!trimmed) return;
 
@@ -87,7 +87,7 @@ export function useChat() {
         .filter((m) => (m.role === 'user' || m.role === 'assistant') && m.content)
         .map(({ role, content }) => ({ role, content }));
 
-      performSend(trimmed, conversationHistory);
+      performSend(trimmed, conversationHistory, tone);
     },
     [messages]
   );

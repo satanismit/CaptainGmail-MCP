@@ -1,4 +1,5 @@
 import base64
+import re
 from email.message import EmailMessage
 from typing import Any
 
@@ -89,6 +90,23 @@ def extract_plain_text(part: dict[str, Any]) -> str:
             return text
 
     return ""
+
+
+def clean_email_body(body: str, max_chars: int = 1500) -> str:
+    """Clean and compact email body to prevent LLM token limit issues."""
+    if not body:
+        return "(No plain-text body found)"
+
+    cleaned = re.sub(r"\r\n|\r", "\n", body)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned).strip()
+
+    if len(cleaned) > max_chars:
+        return (
+            cleaned[:max_chars]
+            + f"\n... [Body truncated to {max_chars} chars for context limits]"
+        )
+    return cleaned
 
 
 def list_recent_emails(
@@ -254,7 +272,7 @@ def get_email(
             "recipient": get_header(headers, "To"),
             "subject": get_header(headers, "Subject") or "(No subject)",
             "date": get_header(headers, "Date"),
-            "body": body or "(No plain-text body found)",
+            "body": clean_email_body(body, max_chars=2000),
         }
 
     except HttpError as error:
@@ -466,7 +484,7 @@ def build_thread(
                 "sender": get_header(headers, "From"),
                 "recipient": get_header(headers, "To"),
                 "date": get_header(headers, "Date"),
-                "body": body or "(No plain-text body found)",
+                "body": clean_email_body(body, max_chars=1200),
             }
         )
 
@@ -650,7 +668,76 @@ def create_draft(
         ) from error
 
 
+def get_dashboard_emails(
+    max_results: int = 15,
+    access_token: str | None = None,
+) -> dict[str, Any]:
+    """Retrieve recent inbox emails and user profile for dashboard analysis."""
+    if max_results < 1:
+        raise ValueError("max_results must be at least 1.")
 
+    service = build_gmail_service(access_token=access_token)
+    user_email = ""
+    try:
+        profile = service.users().getProfile(userId="me").execute()
+        user_email = profile.get("emailAddress", "").lower()
+    except Exception:
+        pass
 
+    try:
+        response = (
+            service.users()
+            .messages()
+            .list(
+                userId="me",
+                labelIds=["INBOX"],
+                maxResults=min(max_results, 30),
+            )
+            .execute()
+        )
+        messages = response.get("messages", [])
+        email_items: list[dict[str, Any]] = []
 
+        for item in messages:
+            msg_id = item["id"]
+            msg_data = (
+                service.users()
+                .messages()
+                .get(
+                    userId="me",
+                    id=msg_id,
+                    format="metadata",
+                    metadataHeaders=["From", "Subject", "Date", "To"],
+                )
+                .execute()
+            )
+            headers = msg_data.get("payload", {}).get("headers", [])
+            sender = get_header(headers, "From")
+            subject = get_header(headers, "Subject") or "(No subject)"
+            date_str = get_header(headers, "Date")
+            recipient = get_header(headers, "To")
+            snippet = msg_data.get("snippet", "")
+            thread_id = msg_data.get("threadId", msg_id)
+
+            email_items.append(
+                {
+                    "id": msg_id,
+                    "thread_id": thread_id,
+                    "sender": sender,
+                    "sender_name": extract_sender_name(sender),
+                    "recipient": recipient,
+                    "subject": subject,
+                    "date": date_str,
+                    "snippet": snippet,
+                }
+            )
+
+        return {
+            "user_email": user_email,
+            "emails": email_items,
+        }
+    except HttpError as error:
+        raise RuntimeError(
+            f"Failed to retrieve dashboard emails: {error}"
+        ) from error
 

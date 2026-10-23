@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, Mail, Reply, Clock, FileText, Calendar, MessageSquare, Code } from 'lucide-react';
+import { ChevronRight, Mail, Reply, Clock, FileText, Calendar, MessageSquare, Code, List, CheckSquare } from 'lucide-react';
 import TEMPLATES from '../data/templates';
 
 function getIconForTemplate(name) {
@@ -12,12 +12,16 @@ function getIconForTemplate(name) {
       return <Clock size={16} color="var(--google-yellow)" />;
     case 'Summarize thread into reply':
       return <FileText size={16} color="var(--google-blue)" />;
+    case 'Summarize Email Thread':
+      return <List size={16} color="var(--google-red)" />;
     case 'Meeting / schedule request':
       return <Calendar size={16} color="var(--google-green)" />;
     case 'Casual short':
       return <MessageSquare size={16} color="var(--google-blue)" />;
     case 'Return JSON draft (tool)':
       return <Code size={16} color="var(--google-red)" />;
+    case 'Action Items & Follow-ups':
+      return <CheckSquare size={16} color="var(--google-green)" />;
     default:
       return <Mail size={16} color="var(--text-secondary)" />;
   }

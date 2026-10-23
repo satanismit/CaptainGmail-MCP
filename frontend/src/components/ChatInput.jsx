@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, Zap, Square } from 'lucide-react';
 
-function ChatInput({ onSend, isLoading, disabled, onStop }) {
+const TONES = [
+  { value: 'professional', label: 'Professional' },
+  { value: 'friendly', label: 'Friendly' },
+  { value: 'concise', label: 'Concise' },
+  { value: 'formal', label: 'Formal' },
+];
+
+function ChatInput({ onSend, isLoading, disabled, onStop, tone, onToneChange }) {
   const [value, setValue] = useState('');
   const textareaRef = useRef(null);
 
@@ -13,7 +20,7 @@ function ChatInput({ onSend, isLoading, disabled, onStop }) {
     }
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
-    onSend(trimmed);
+    onSend(trimmed, tone);
     setValue('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -40,9 +47,17 @@ function ChatInput({ onSend, isLoading, disabled, onStop }) {
         <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
           <Paperclip size={14} /> Attach
         </button>
-        <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
+        <button type="button" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
           <Zap size={14} /> Templates
         </button>
+        <label className="tone-selector">
+          <span className="tone-selector__label">Tone</span>
+          <select value={tone} onChange={(e) => onToneChange(e.target.value)} aria-label="Email writing tone">
+            {TONES.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
       </div>
       <form className="chat-input__form" onSubmit={handleSubmit}>
         <textarea

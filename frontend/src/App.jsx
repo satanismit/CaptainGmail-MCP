@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Mail, AlertTriangle, Link } from 'lucide-react';
 import { getStatus, connectGmail, disconnectGmail } from './services/api';
 import { useChat } from './hooks/useChat';
+import { useDashboard } from './hooks/useDashboard';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import ChatInput from './components/ChatInput';
 import DraftPreview from './components/DraftPreview';
+import Dashboard from './components/Dashboard';
 import './App.css';
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
   const [statusLoading, setStatusLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [tone, setTone] = useState('professional');
+  const [activeView, setActiveView] = useState('chat');
 
   const {
     messages,
@@ -30,6 +34,13 @@ function App() {
     regenerateResponse,
     stopGeneration
   } = useChat();
+
+  const {
+    data: dashboardData,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+    refresh: refreshDashboard,
+  } = useDashboard();
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type });
@@ -77,7 +88,25 @@ function App() {
   };
 
   const handleTemplateUse = (templateText) => {
-    sendMessage(templateText);
+    setActiveView('chat');
+    sendMessage(templateText, tone);
+  };
+
+  const handleOpenEmail = (messageId, subject) => {
+    setActiveView('chat');
+    sendMessage(`Read email with message ID ${messageId} (Subject: "${subject}")`, tone);
+  };
+
+  const handleDraftFollowUp = (subject, sender) => {
+    setActiveView('chat');
+    sendMessage(
+      `Draft a follow-up email regarding "${subject}" to ${sender}. Keep it professional and concise.`,
+      tone
+    );
+  };
+
+  const handleViewChange = (view) => {
+    setActiveView(view);
   };
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
@@ -151,6 +180,8 @@ function App() {
           onClearChat={clearChat}
           onDisconnect={handleDisconnect}
           onToggleSidebar={toggleSidebar}
+          activeView={activeView}
+          onViewChange={handleViewChange}
         />
         {!aiConfigured && (
           <div className="warning-banner">
@@ -158,27 +189,45 @@ function App() {
             Set API_KEY and MODEL in your .env file to enable chat.
           </div>
         )}
-        <ChatArea 
-          messages={messages} 
-          isLoading={isLoading} 
-          onDelete={deleteMessage}
-          onEdit={editMessage}
-          onRegenerate={regenerateResponse}
-        />
-        {pendingAction && (
-          <DraftPreview
-            pendingAction={pendingAction}
-            onConfirm={confirmDraftCreated}
-            onCancel={dismissPendingAction}
-            showToast={showToast}
+
+        {activeView === 'chat' && (
+          <>
+            <ChatArea
+              messages={messages}
+              isLoading={isLoading}
+              onDelete={deleteMessage}
+              onEdit={editMessage}
+              onRegenerate={regenerateResponse}
+            />
+            {pendingAction && (
+              <DraftPreview
+                pendingAction={pendingAction}
+                onConfirm={confirmDraftCreated}
+                onCancel={dismissPendingAction}
+                showToast={showToast}
+              />
+            )}
+            <ChatInput
+              onSend={sendMessage}
+              tone={tone}
+              onToneChange={setTone}
+              disabled={!aiConfigured}
+              isLoading={isLoading}
+              onStop={stopGeneration}
+            />
+          </>
+        )}
+
+        {activeView === 'dashboard' && (
+          <Dashboard
+            dashboardData={dashboardData}
+            isLoading={dashboardLoading}
+            error={dashboardError}
+            onRefresh={refreshDashboard}
+            onOpenEmail={handleOpenEmail}
+            onDraftFollowUp={handleDraftFollowUp}
           />
         )}
-        <ChatInput
-          onSend={sendMessage}
-          disabled={!aiConfigured}
-          isLoading={isLoading}
-          onStop={stopGeneration}
-        />
       </div>
       {toast && (
         <div className="toast-container">

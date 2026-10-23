@@ -40,13 +40,14 @@ export async function getTemplates() {
   return handleResponse(response);
 }
 
-export async function sendChatMessage(message, conversationHistory, signal) {
+export async function sendChatMessage(message, conversationHistory, signal, tone = 'professional') {
   const response = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       message,
       conversation_history: conversationHistory,
+      tone,
     }),
     signal, // Pass the AbortSignal to fetch
   });
@@ -59,5 +60,11 @@ export async function createDraft(to, subject, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ to, subject, body }),
   });
+  return handleResponse(response);
+}
+
+
+export async function getDashboard() {
+  const response = await fetch(`${API_BASE}/api/dashboard`);
   return handleResponse(response);
 }

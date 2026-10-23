@@ -298,11 +298,11 @@ function Dashboard({ dashboardData, isLoading, error, onRefresh, onOpenEmail, on
 
   const {
     summary,
-    important_emails = [],
-    pending_actions = [],
-    upcoming_deadlines = [],
-    awaiting_replies = [],
-    follow_up_recommendations = [],
+    important_emails = summary?.important_emails_list || [],
+    pending_actions = summary?.pending_actions_list || [],
+    upcoming_deadlines = summary?.upcoming_deadlines_list || [],
+    awaiting_replies = summary?.awaiting_replies_list || [],
+    follow_up_recommendations = summary?.follow_up_recommendations || [],
     retrieved_at,
     warnings = [],
   } = dashboardData;

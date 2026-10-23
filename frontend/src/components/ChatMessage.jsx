@@ -40,6 +40,8 @@ function ChatMessage({ message, onDelete, onEdit, onRegenerate }) {
   else wrapperClass += ' chat-message-wrapper--assistant';
   if (isError) wrapperClass += ' chat-message-wrapper--error';
 
+  if (isEditing) wrapperClass += ' chat-message-wrapper--editing';
+
   return (
     <div className={wrapperClass}>
       <div className="chat-message">
@@ -48,7 +50,7 @@ function ChatMessage({ message, onDelete, onEdit, onRegenerate }) {
         </div>
         <div className="chat-message__body">
           {isEditing ? (
-            <div style={{ width: '100%' }}>
+            <div className="chat-message__edit-form">
               <textarea
                 className="chat-message__edit-area"
                 value={editValue}

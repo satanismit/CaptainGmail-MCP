@@ -38,7 +38,9 @@ function Sidebar({ onUseTemplate, isOpen, onClose }) {
   };
 
   const handleSelect = (text) => {
-    setSelectedText(text);
+    onUseTemplate(text);
+    setSelectedText('');
+    if (onClose) onClose();
   };
 
   const handleUse = () => {

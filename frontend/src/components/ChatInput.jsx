@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { Send, Paperclip, Zap, Square } from 'lucide-react';
 
 const TONES = [
@@ -8,9 +8,16 @@ const TONES = [
   { value: 'formal', label: 'Formal' },
 ];
 
-function ChatInput({ onSend, isLoading, disabled, onStop, tone, onToneChange }) {
-  const [value, setValue] = useState('');
+function ChatInput({ onSend, isLoading, disabled, onStop, tone, onToneChange, value, onValueChange, focusToken }) {
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (focusToken && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
+    }
+  }, [focusToken]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +28,7 @@ function ChatInput({ onSend, isLoading, disabled, onStop, tone, onToneChange }) 
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
     onSend(trimmed, tone);
-    setValue('');
+    onValueChange('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -35,7 +42,7 @@ function ChatInput({ onSend, isLoading, disabled, onStop, tone, onToneChange }) 
   };
 
   const handleInput = (e) => {
-    setValue(e.target.value);
+    onValueChange(e.target.value);
     const el = e.target;
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 150) + 'px';

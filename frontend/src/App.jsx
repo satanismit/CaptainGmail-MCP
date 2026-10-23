@@ -20,6 +20,8 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tone, setTone] = useState('professional');
   const [activeView, setActiveView] = useState('chat');
+  const [chatInputValue, setChatInputValue] = useState('');
+  const [chatInputFocusToken, setChatInputFocusToken] = useState(0);
 
   const {
     messages,
@@ -89,7 +91,8 @@ function App() {
 
   const handleTemplateUse = (templateText) => {
     setActiveView('chat');
-    sendMessage(templateText, tone);
+    setChatInputValue(templateText);
+    setChatInputFocusToken((previous) => previous + 1);
   };
 
   const handleOpenEmail = (messageId, subject) => {
@@ -209,6 +212,9 @@ function App() {
             )}
             <ChatInput
               onSend={sendMessage}
+              value={chatInputValue}
+              onValueChange={setChatInputValue}
+              focusToken={chatInputFocusToken}
               tone={tone}
               onToneChange={setTone}
               disabled={!aiConfigured}
